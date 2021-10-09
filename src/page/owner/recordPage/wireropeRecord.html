@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../../static/layui/css/layui.css"  media="all">
+    <script src="../../../static/layui/layui.js" charset="utf-8"></script>
+    <script crossorigin="anonymous" src="../../../static/jquery/jquery-3.3.1.min.js"></script>
+    <script crossorigin="anonymous" src="../../../static/layui/layui.all.js"></script>
+    <style>
+      
+        .thead{
+            width: 190px;
+            line-height: 50px;
+            margin:0 60px;
+        }
+        .hint{
+            display: inline;
+            color: rgba(119, 219, 79, 0.87);
+            opacity: 0;
+            line-height: 38px;
+            margin-left: -75px;
+        }
+       .first{
+           margin-left: -3px;
+       }
+       .arow{
+        display: inline-block;
+       }
+       .count{
+         /* width: 38px; */
+         /* height: 38px; */
+         display: inline;
+         line-height: 38px;
+         font-size: 20px;
+         border: 1px #ccc solid;
+         border-radius: 50%;
+         padding: 7px;
+         margin-right: 10px;
+       }
+    </style>
+</head>
+<body>
+    <form action="javascript:;" >
+        <label class="thead">检验名称</label>
+        <label class="thead">检验描述</label>
+        <label class="thead">检验记录日期</label>
+        <label class="thead">检验记录文件</label>
+        <button id="add" class="layui-btn">添加行</button>
+        <div class="arow" >
+            <div class="count" ></div>
+           
+            <div class="layui-form-item layui-inline first">
+                <div class="layui-input-inline">
+                  <input type="text" name="recordName" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+                </div>
+              </div>
+              <div class="layui-form-item layui-inline first">
+                <div class="layui-input-inline">
+                  <input type="text" name="recordComment" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+                </div>
+              </div>
+            <div class="layui-form-item layui-inline first">
+                <div class="layui-input-inline">
+                  <input type="text" name="recordDate"class="layui-input datetime" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+                </div>
+              </div>
+            <div class="layui-form-item layui-inline first">
+                <div class="layui-input-inline">
+                  <button type="button" class="layui-btn" id="fileUpload" ><i class="layui-icon" ></i>上传文件</button>
+                  <!-- 隐藏的input,一个隐藏的input（用于保存文件url） -->
+                  <input type="hidden" id="file_url" name="recordFile" value=""/> 
+                </div>
+                <div class="hint" >上传文件成功</div>
+              </div>
+        </div>
+       <div id="rowBox"></div>
+        
+       <div class="layui-form-item">
+        <div class="layui-input-inline" style="margin-left: 150px;">
+          <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1" id="submit" >立即提交</button>
+          <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+        </div>
+      </div>
+     
+        
+
+    </form>
+
+
+    
+</body>
+
+
+<script src="../../../static/js/configure.js"></script>
+<script >
+    layui.use(['form','element','laydate','layedit','upload'],function(){
+        var form=layui.form,
+        layer=layui.layer,
+        layedit = layui.layedit,
+        laydate = layui.laydate,
+        element=layui.element,
+        upload=layui.upload;
+
+        //  //日期
+        // laydate.render({
+        //     elem: '#date'
+        // });
+        function timeAdd(){
+         lay('.datetime').each(function() {
+             laydate.render({
+                 elem : this,
+                 trigger : 'click'
+             });
+         });
+        }
+      //初始化时先调用一次，确保静态的那一行可点
+      timeAdd();
+        
+        //自定义验证规则
+      form.verify({
+        title: function (value) {
+          if (value.length < 1) {
+            return '*必填项不能为空';
+          }
+        }
+
+        , content: function (value) {
+          layedit.sync(editIndex);
+        }
+      });
+
+        //指定允许上传的文件类型
+        
+          // fileAdd("#fileUpload1","#file_url1");
+      
+      //  console.log(fileObj);
+        window.fileAdd=function (id,id_url,hint) {
+          //console.log(id);
+          // console.log(document.querySelector(id));
+              upload.render({
+                    elem: id
+                    , url: address + 'upload'
+                    , accept: 'file' //普通文件
+                    , processData: false
+                    , headers: { access_token: localStorage.access_token }
+                    // ,bindAction:"#submit"   //点击提交时才会上传到后端控制器
+                    // ,auto:false
+                    // ,drag:true  
+                    , done: function (res, index, upload) {
+                        let url = document.getElementById(id_url);
+                        url.value = res.message;
+                      let i=0;
+                      
+                        let hintObj = document.querySelectorAll(hint);
+                        hintObj[i].style.opacity = 1;
+                        i++;
+                        console.log(url)
+                    }
+                    //请求异常回调
+                    , error: function (index, upload) {
+                        alert("请求异常")
+                        console.log("请求异常");
+                    }
+
+                }); 
+            
+        }
+
+                 
+        
+        fileAdd("#fileUpload","file_url",".hint");
+      
+        //跨页面传参
+        function getQueryVariable(variable){
+          var query = window.location.search.substring(1);
+          var vars = query.split("&");
+          for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] == variable){return pair[1];}
+          }
+          return(false);
+        }
+
+        let id1=getQueryVariable("id");
+        let userId1=getQueryVariable("storeId");
+
+     
+    //监听提交
+    form.on('submit(demo1)', function(data){
+      console.log(data);
+      
+
+        $.ajax({
+            url:address+'rope/inwarehouse',
+            type:'post',
+            contentType: "application/json",
+            data:JSON.stringify(data.field),
+            dataType:"json",
+            success:function(data){
+              console.log(data);
+              alert("提交成功")
+                if(data.status>=200&&data.status<300){
+                    layer.alert("提交成功！")
+                }
+                else{
+                    layer.alert("提交失败！")
+                }
+            },
+            error:function(e){
+            layer.alert("提交失败！")
+
+            },
+            
+        });
+        // console.log(data.field);
+        return false;
+    });
+
+
+     //动态添加输入行
+      addBtn();
+      function addBtn() {
+        var add = document.getElementById("add");
+        var rowBox = document.getElementById("rowBox");
+        var countObj = document.querySelectorAll(".count")
+
+        var str = '';
+        var count = 1;
+        countObj[0].innerHTML = count;
+
+        // window.onload=function(){
+        add.onclick = function () {
+
+          count++;
+
+
+
+
+
+          str += `<div class="arow" > <div class="count">${count}</div><div class="layui-form-item layui-inline "><div class="layui-input-inline"><input type="text" name="recordName" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input"></div></div><div class="layui-form-item layui-inline"><div class="layui-input-inline"><input type="text" name="recordComment" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input"></div></div><div class="layui-form-item layui-inline"><div class="layui-input-inline"><input type="text" name="recordDate" class="layui-input datetime" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input"></div></div><div class="layui-form-item layui-inline"><div class="layui-input-inline"><button type="button" class="layui-btn" id="fileUpload${count - 1}" onclick='fileAdd("#fileUpload"+${count - 1},"file_url"+${count - 1},".hint")'><i class="layui-icon"></i>上传文件</button><input type="hidden" id="file_url${count - 1}" name="recordFile" value=""/> </div><div class="hint" >上传文件成功</div></div></div>`
+
+          var rowBox = document.getElementById("rowBox");
+          rowBox.innerHTML = str;
+
+          fileAdd("#fileUpload" + (count - 1), "file_url" + (count - 1), ".hint" + (count - 1))
+          // console.log("#fileUpload"+(count-1));
+
+          form.render();
+          timeAdd();
+
+        }
+      }   
+  // }
+
+  });
+
+  
+  
+       
+
+</script>
+</html>

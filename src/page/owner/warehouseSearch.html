@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css"  media="all">
+    <script src="../../static/layui/layui.js" charset="utf-8"></script>
+    <script crossorigin="anonymous" src="../../static/jquery/jquery-3.3.1.min.js"></script>
+    <style>
+       .title{
+           widows: 300px;
+           height: 80px;
+           line-height: 80px;
+           font-size: 30px;
+           margin-left: 20px;
+       }
+    </style>
+</head>
+<body>
+    <div class="title">仓库信息查询</div>
+    <div class="demoTable" style="margin-left: 20px;">
+        <a >
+          位置
+          <div class="layui-inline">
+            <input class="layui-input" name="location" id="location"  autocomplete="off">
+          </div>
+          仓库名
+          <div class="layui-inline">
+            <input class="layui-input" name="warehouseName" id="warehouseName"  autocomplete="off">
+          </div>
+          <button class="layui-btn" data-type="reload" id="btnSearch" >入库信息查询</button>
+          <button class="layui-btn" data-type="reload" id="btnSearch" >刷新</button>
+        </a>
+      </div>
+    <table class="layui-hide" id="test" lay-filter="test"></table>
+    
+    
+    <script type="text/html" id="toolbarDemo">
+        <div class="layui-btn-container">
+          <a  class="layui-btn layui-btn-sm layui-btn-normal" data-type="add"><i class="layui-icon"></i>新建仓库</a>
+        </div>
+      </script>
+
+    <script type="text/html" id="barDemo">
+        <a class="layui-btn layui-btn-xs" lay-event="upload"><i class="layui-icon"></i>更新仓库</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del"><i class="layui-icon"></i>删除</a>
+      </script>
+</body>
+<script src="../../static/js/configure.js"></script>
+<script >
+    layui.use(['table'], function () {
+        var table = layui.table;
+        table.render({
+            elem:"#test",
+            url:  address+'warehouse/selectAllByLike',
+            id:"testReload",
+            toolbar: '#toolbarDemo' ,//开启头部工具栏，并为其绑定左侧模板
+            defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+                title: '提示'
+
+                , layEvent: 'LAYTABLE_TIPS'
+                , icon: 'layui-icon-tips'
+            }],
+            cols: [[
+                { field: 'id', title: 'ID', hide: true }
+                , { field: 'warehouseName', title: '仓库名',edit:'text' }
+                , { field: 'location', title: '位置',edit:'text'  }
+                , { field: 'caozuo', title: '操作', toolbar:"#barDemo" }
+            ]],
+            parseData: function (res) {
+                return {
+                    "code": 0
+                    , "msg": ""
+                    , "count": res.total   //解析数据长度
+                    , "data": res.list    //解析数据列表
+                    , "prev": res.prePage    //向前一页
+                    , "page": res.pageNum     //当前页数
+                    , "next": res.nextPage    //下一页
+                    , "limit": res.pageSize    //一页显示多少条
+
+                }
+
+            }
+            //分页
+            , page: { //支持传入 laypage 组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                layout: ['count', 'prev', 'page', 'next', 'limit', 'skip'] //自定义分页布局
+                , curr: 1        //设定初始在第 5 页
+                // ,currentPage: 2 
+                , pageSize: 4 //一页显示多少条
+                , limits: [ 5,10,15,20]//每页条数的选择项
+                , groups: 5 //只显示 2 个连续页码
+                , first: "首页" //不显示首页
+                , last: "尾页" //不显示尾页
+
+            }
+            , request: {
+                pageName: 'currentPage' //页码的参数名称，默认：page
+                , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                , statusName: 'status'//数据状态的字段名称，默认：code
+                , statusCode: 200 //成功的状态码，默认：0
+            }
+        });
+
+
+        table.on('tool(test)', function (obj) {
+            var data = obj.data;
+            //console.log(obj)
+            if (obj.event === 'del') {
+                layer.confirm('真的删除行么', function (index) {
+                    obj.del();
+                    layer.close(index);
+                    //向服务端发送请求
+                    $.ajax({
+                        url: address+'warehouse/deleteById',
+                        type: 'get',
+                        data: { 'id': data.id },//向服务端发送删除的id
+
+                        success: function (suc) {
+                            if (suc == 200) {
+                                layer.msg("删除失败", { icon: 5 });
+                            }
+                            else {
+                                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                                layer.close(index);
+                                console.log(index);
+                                layer.msg("删除成功", { icon: 1 });
+                            }
+                        }
+                    });
+
+
+                });
+            } 
+            //编辑功能
+            else if (obj.event === 'upload') {
+
+              // var value=obj.value;  //修改后的值
+              // var data=obj.data;  //得到所在行所有键值
+              // var field=obj.field; //得到字段
+
+              $.ajax({
+                url: address+'warehouse/update',      //换成自己的url
+                type: 'post',
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                dataType: "json",
+                success: function (e) {
+                  layer.alert("编辑成功")
+                    
+                },
+                error: function (e) {
+                    layer.msg(e);
+                }
+            })
+
+
+
+
+            
+            }
+
+
+        });
+
+        
+  //添加
+  const active={
+    add:function(){
+      addIndex=layer.open({
+        title:"添加",
+        type:2,
+        content:'addwarehouseSearch.html',
+        area:['600px','350px'],   //弹出框大小
+        success:function(layero,addIndex){
+          setTimeout(function(){
+            layer.tips('点击此处返回列表','.layui-layer-setwin .layui-layer-close',{
+              tips:3
+            });
+          },500);
+        }
+      });
+    }
+  };
+  $('.layui-btn-container .layui-btn').on('click',function(){
+    //获取数据类型
+    var type=$(this).data('type');
+    active[type]?active[type].call(this):'';
+  });
+
+  //仓库信息查询
+  $('#btnSearch').click(function () {
+    table.reload('testReload',{
+    url:address+"warehouse/selectAllByLike"
+    ,methods:"get"
+    ,where:{
+      //设定异步数据接口的额外参数，任意设
+        location:$('#location').val(), 
+        warehouseName:$('#warehouseName').val()
+     
+    }
+    ,page:{
+      curr:1 //重新从第一页开始
+    }
+  })
+
+  });
+
+
+    })
+</script>
+</html>

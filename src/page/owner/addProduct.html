@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css"  media="all">
+    <script src="../../static/layui/layui.js" charset="utf-8"></script>
+    <script crossorigin="anonymous" src="../../static/jquery/jquery-3.3.1.min.js"></script>
+</head>
+<style>
+    .form{
+      width: 800px;
+      height: 500px;
+      margin: auto;
+    }
+    .layui-form{
+      margin-left: 100px;
+    }
+    .warning{
+      line-height: 38px;
+      display: inline;
+      margin-left: 20px;
+      color: #f73162;
+      /* display: none; */
+    }
+    .layui-inline{
+      margin-bottom: 15px;
+    }
+    .layui-input{
+      width: 190px;
+      margin-right: 5px;
+    }
+</style>
+<body>
+    <form class="layui-form" action="" class="form">
+   
+
+        <div class="layui-form-item">
+          <label class="layui-form-label">批次号</label>
+          <div class="layui-input-inline">
+            <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+          </div>
+          <div class="warning" display="none">*</div>
+        </div>
+       
+        <div class="layui-form-item" style="float: left;">
+            <label class="layui-form-label">合格证</label>
+            <div class="layui-input-inline">
+              <button type="button" class="layui-btn" id="test3"><i class="layui-icon"></i>上传文件</button>
+            </div>
+            <div class="warning" >*</div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">总数</label>
+            <div class="layui-input-inline">
+              <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+       
+        
+       
+          <div class="layui-form-item">
+            <label class="layui-form-label">进货日期</label>
+            <div class="layui-input-inline">
+              <input type="text" name="date" id="date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+         
+         
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">制造商</label>
+            <div class="layui-input-inline">
+              <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+
+          
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">原材料名称</label>
+            <div class="layui-input-inline">
+              <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">船型</label>
+            <div class="layui-input-inline">
+              <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+
+          <div class="layui-form-item">
+            <label class="layui-form-label">型号</label>
+            <div class="layui-input-inline">
+              <input type="text" name="title" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+
+          <div class="layui-form-item ">
+            <label class="layui-form-label">仓库</label>
+            <div class="layui-input-inline">
+              <select name="modules" lay-verify="required" lay-search="">
+                <option value="">直接选择或搜索选择</option>
+                <option value="18">东仓库</option>
+                <option value="19">南仓库</option>
+                <!-- <option value="20">radio</option> -->
+              </select>
+            </div>
+            <div class="warning" >*</div>
+          </div>
+
+          <div class="layui-form-item">
+            <div class="layui-input-inline" style="margin-left:125px;">
+              <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1"  >立即提交</button>
+              <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+          </div>
+      </form>
+</body>
+<script src="../../static/js/configure.js"></script>
+<script >
+    layui.use(['form','element','laydate','layedit','upload'],function(){
+        var form=layui.form,
+        layer=layui.layer,
+        layedit = layui.layedit,
+        laydate = layui.laydate,
+        element=layui.element,
+        upload=layui.upload;
+      
+
+         //日期
+        laydate.render({
+            elem: '#date'
+        });
+
+        //自定义验证规则
+      form.verify({
+        title: function (value) {
+          if (value.length < 1) {
+            return '必填项不能为空';
+          }
+        }
+
+        , content: function (value) {
+          layedit.sync(editIndex);
+        }
+      });
+
+      
+
+     
+
+     
+    //监听提交
+    form.on('submit(demo1)', function(data){
+       
+
+        $.ajax({
+            url:address+'product/inwarehouse',
+            type:'post',
+            data:JSON.stringify(data.field),
+            dataType:"json",
+            success:function(data){
+                if(data){
+                    layer.alert("提交成功！")
+                }
+                else{
+                    layer.alert("提交失败！")
+                }
+            },
+            error:function(e){
+            layer.alert("提交失败！")
+            },
+            
+        });
+        return false;
+    });
+
+
+
+
+  });
+</script>
+</html>

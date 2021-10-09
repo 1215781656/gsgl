@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Layui</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../src/static/layui/css/layui.css"  media="all">
+  <script crossorigin="anonymous" src="../static/jquery/jquery-3.3.1.min.js"></script>
+  <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+  <style>
+
+  </style>
+</head>
+<body>
+  <!-- <div class="demoTable"> -->
+    <!-- <a >
+      批次号:
+    <div class="layui-inline">
+      <input class="layui-input" name="id" id="batchNumber" autocomplete="off">
+    </div>
+    
+    </a>
+    <a >
+      船型:
+    <div class="layui-inline">
+      <input class="layui-input" name="id" id="shipType" autocomplete="off">
+    </div>
+   
+    </a>
+    <a >
+      型号:
+    <div class="layui-inline">
+      <input class="layui-input" name="id" id="type"  autocomplete="off">
+    </div>
+    <button class="layui-btn" data-type="reload" id="btnSearch" >搜索</button>
+    </a>
+  </div> -->
+  <!-- 高级查询 -->
+  <div class="demoTable" style="margin-top: 10px;">
+    <a >
+      批次号:
+    <div class="layui-inline">
+      <input class="layui-input" name="id" id="batchNumber" autocomplete="off">
+    </div>
+    </a>
+
+    <div class="layui-form-item layui-form layui-input-inline" style="width: 80px;position: relative;top: 8px;">
+      <div class="layui-input-inline"  style="width:80px;">
+        <select name="choose1" lay-verify="required" id="choose1" lay-search="" class="" >
+          <option value="and">AND</option>
+          <option value="or">OR</option>
+          <option value="not">NOT</option>
+        </select>
+      </div>
+    </div>
+    
+    <a >
+      船型:
+    <div class="layui-inline">
+      <input class="layui-input" name="id" id="shipType" autocomplete="off">
+    </div>
+    </a>
+
+    <div class="layui-form-item layui-form layui-input-inline" style="width: 80px;position: relative;top: 8px;">
+      <div class="layui-input-inline"style="width:80px;">
+        <select name="choose2" id="choose2" lay-verify="required" lay-search="" class="" >
+          <option value="and">AND</option>
+          <option value="or">OR</option>
+          <option value="not">NOT</option>
+        </select>
+      </div>
+    </div>
+
+    <a >
+      型号:
+    <div class="layui-inline">
+      <input class="layui-input" name="id" id="type"  autocomplete="off">
+    </div>
+    <button class="layui-btn" data-type="reload" id="btnSearch" >高级查询</button>
+    </a>
+  </div>
+
+<table class="layui-hide" id="test" lay-filter="test"></table>
+ 
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+   
+    
+    <!-- 添加 -->
+    <a  class="layui-btn layui-btn-sm layui-btn-normal" data-type="add">钢丝绳入库</a>
+    
+    <!-- <button class="layui-btn layui-btn-sm" lay-event="add" id="btn-add"> 添加 </button> -->
+ 
+  </div>
+</script>
+
+<!-- 添加和修改的弹出层 -->
+<div style="display: none;padding: 5px;" id="addOrUpadateDiv">
+    <form action="" method="get" class="layui-from layui-form-pane" id="dataFrm" lay-filter="dataFrm">
+      <div class="layui-form-item">
+        <label class="layui-form-label">父级部门</label>
+        <div class="layui-input-block">
+          <input type="text" name="deptid" id="deptid">
+        </div>
+      </div>
+    </form>
+</div>
+ 
+<script type="text/html" id="barDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="barDemoUD">
+  <!-- <button type="button" class="layui-btn layui-btn-xs " id="upload1" lay-event="upload" ><i class="layui-icon"></i>上传</button> -->
+  <!-- 隐藏的input,用来保存上传的url -->
+    <!-- <a class="layui-btn layui-btn-xs " lay-event="upload" id="upload"><i class="layui-icon"></i>上传</a> -->
+    
+  <input type="hidden" id="file_url" name="file" value="">
+  <!-- <a class="layui-btn layui-btn-xs" lay-event="upload" id="upload">上传</a> -->
+
+  <!-- <a  class="layui-btn  layui-btn-xs " lay-event="download" id="download"  >下载</a> -->
+ 
+</script>
+              
+          
+<script src="../../src/static/layui/layui.js" charset="utf-8"></script>
+
+ 
+<script src="../static/js/configure.js"></script>
+<script >
+layui.use(['table','upload','element','form'], function(){
+  var table = layui.table;
+  // 文件上传
+  var $ = layui.jquery,
+      form=layui.form,
+      upload = layui.upload;
+
+  
+  table.render({
+    
+    elem: '#test'
+    ,url:address+'rope/selectAllByLike'
+    , method:'get'  //提交方式
+    ,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui 2.2.1 新增
+    ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+    ,defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+      title: '提示'
+      ,layEvent: 'LAYTABLE_TIPS'
+      ,icon: 'layui-icon-tips'
+    }]
+    ,title: '钢丝绳表'
+    , event: true
+    ,id: 'testReload'    //重载
+    ,cols: [[
+      //edit:"text"表示可编辑
+      //hide：true，表示隐藏
+      //toolber:"#berDemo" 添加工具栏
+      {type: 'checkbox', fixed: 'left'}
+      ,{field:'id', hide:true, title:'钢丝绳id',  edit: 'text', }
+      ,{field:'batchNumber', title:'批次号',edit: 'text' ,  }
+      ,{field:'type', title:'型号', edit: 'text' ,  }
+      ,{field:'shipType', title:'船型', edit: 'text' ,  }
+      ,{field:'count', title:'总数',  edit: 'text' ,}
+      ,{field:'outCount', title:'出库数量', edit: 'text' ,  }
+      ,{field:'leftCount', title:'剩余数量', edit: 'text'}
+      ,{
+        type: 'upload', title: "合格证", width: 140,
+         templet: function (d) {//这里的参数d是templete的固定用法，可以取到该行的所有数据
+       
+          if (d.certification == "合格证") {//未上传
+            //class里的upload_btn是用来标志上传按钮的，没有定义实际的css样式
+            return '<button class="layui-btn layui-btn-xs upload_btn" value="' + d.id + '"><i class="layui-icon"></i>上传</button>';
+          } else { //已上传||被替换
+            return '<button class="layui-btn layui-btn-xs replace_btn" value="' + d.id + '"><i class="layui-icon"></i>替换</button>' +
+              '<button class="layui-btn  layui-btn-xs delete_btn" lay-event="download" value="' + d.id + '" style="margin-left:10px">下载</button>'; //删除按钮不需要渲染上传，只是一个动作按钮，可以通过lay-event进行行事件监听
+          }
+        }
+      }
+      ,{field:'manufacturer', title:'制造商',edit: 'text' , }
+      ,{field:'date', title:'进货日期',  edit: 'text'}
+      ,{field:'inRecord',  title:'入库检验记录', width:120,
+      templet: function (d) {//这里的参数d是templete的固定用法，可以取到该行的所有数据
+     
+          if (d.inRecord == ""||d.inRecord==null) {//未上传
+            //class里的upload_btn是用来标志上传按钮的，没有定义实际的css样式
+            return '<button class="layui-btn layui-btn-xs "lay-event="inRecord" id="tagid">编辑与查看</button>';
+          } else { //已上传||被替换
+            return '<button class="layui-btn layui-btn-xs " lay-event="inRecord" id="tagid">编辑与查看</button>'; //删除按钮不需要渲染上传，只是一个动作按钮，可以通过lay-event进行行事件监听
+          }
+        } 
+       }
+      ,{field:'warehouseName', title:'仓库', edit: 'text' ,  }
+      
+      ,{field:'certification', title:"合格证",  hide:true}
+      ,{field:'rawName', title:'原材料名称', edit: 'text' , hide:true }
+      ,{field:'userId',hide:true, title:'用户id', edit: 'text' ,  }
+      ,{field:'caozuo', title:'操作',toolbar:"#barDemo" ,width:120}
+      
+    ]]
+    , parseData: function (res) {
+      return {
+        "code": 0
+        , "msg": ""
+        , "count": res.total   //解析数据长度
+        , "data": res.list    //解析数据列表
+        ,"prev":res.prePage    //向前一页
+        ,"page":res.pageNum     //当前页数
+        ,"next":res.nextPage    //下一页
+        ,"limit":res.pageSize    //一页显示多少条
+
+      }
+     
+    }
+    //分页
+    , page: { //支持传入 laypage 组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+      layout: ['count', 'prev', 'page', 'next', 'limit', 'skip'] //自定义分页布局
+      , curr: 1        //设定初始在第 5 页
+      // ,currentPage: 2 
+      , pageSize: 4 //一页显示多少条
+      , limits: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]//每页条数的选择项
+      , groups: 5 //只显示 2 个连续页码
+      , first: "首页" //不显示首页
+      , last: "尾页" //不显示尾页
+
+    }
+    ,request: {
+    pageName: 'currentPage' //页码的参数名称，默认：page
+    ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+    ,statusName:'status'//数据状态的字段名称，默认：code
+    ,statusCode:200 //成功的状态码，默认：0
+  }
+  
+
+
+  , done: function(res, curr, count){//表格加载完成后，对上传按钮进行渲染
+        var tableId = this.id;
+        var tableElem = this.elem;
+        //table render出来实际显示的table组件
+        var tableViewElem = tableElem.next();
+            
+        //渲染当前页面的所有upload组件
+        upload.render({
+          elem: tableViewElem.find('.upload_btn')
+          , url: address+'rope/updateFile' 
+          , accept: 'file' //普通文件
+          ,method:"POST"
+          // ,headers:{access_token: localStorage.access_token}
+         ,before:function(obj){
+           var tableElem=this.item;
+           uploadParem=tableElem.attr('value');
+           layer.load();    //上传loading
+           
+         }
+         ,data:{
+            id:function(){
+              console.log(uploadParem);
+              return uploadParem;
+            }
+         }
+          , done: function (res,index,upload) {
+            layer.closeAll('loading'); //关闭loading
+              window.parent.location.reload();
+              console.log("上传成功");
+                // $("#filepath").val("files/"+res.msg);
+                // console.log(res.message);
+                // console.log(url.value);
+            
+          } 
+         
+           //请求异常回调
+          , error: function (index,upload) {
+            layer.closeAll('loading'); //关闭loading
+            alert("请求异常")
+            console.log("请求异常");
+          }
+          
+        });
+        upload.render({
+          elem: tableViewElem.find('.replace_btn')
+          , url: address+'rope/updateFile' 
+          , accept: 'file' //普通文件
+          ,method:"POST"
+          // ,headers:{access_token: localStorage.access_token}
+         ,before:function(obj){
+           var tableElem=this.item;
+           uploadParem=tableElem.attr('value');
+           layer.load();    //上传loading
+           
+         }
+         ,data:{
+            id:function(){
+              console.log(uploadParem);
+              return uploadParem;
+            }
+         }
+          , done: function (res,index,upload) {
+            layer.closeAll('loading'); //关闭loading
+           
+              console.log("上传成功");
+                // $("#filepath").val("files/"+res.msg);
+                // console.log(res.message);
+                // console.log(url.value);        
+          } 
+           //请求异常回调
+          , error: function (index,upload) {
+            layer.closeAll('loading'); //关闭loading
+            alert("请求异常")
+            console.log("请求异常");
+          }
+          
+        });
+       
+    }
+
+   
+    
+  });
+  
+ 
+
+
+
+
+  //添加
+  //监听按钮打开页面
+table.on('toolbar(test)', function(obj){
+  var checkStatus = table.checkStatus(obj.config.id);
+  switch(obj.event){
+    case 'add':
+      layer.msg('添加');
+    break;
+    case 'delete':
+      layer.msg('删除');
+    break;
+    case 'update':
+      layer.msg('编辑');
+    break;
+  };
+});
+
+//监听单元格编辑
+  table.on('edit(user)', function (obj) {
+
+    var value = obj.value     //得到修改后的指=值
+
+      , data = obj.data    //得到所在行所有键值
+      , field = obj.field;   //得到字段
+    layer.comfirm("确定修改" + '[ID:' + data.id + ']' + field + '字段更改为' +
+      $.ajax({
+        type: 'get',
+        url: address
+        +'rope/selectAllByPage',
+        // data:"id="+data.id+"&field="+field+"&value="+value,
+        data: data,
+        dataType: 'json',
+        success: function (data) {
+          if (data.code == 200) {
+            layer.msg(data.msg, { time: 500 }, function () {
+              window.location.reload();
+            })
+          } else {
+            layer.msg(data.msg, { time: 1000 }, function () {
+              window.location.reload();
+            })
+          }
+        }
+      })
+    )
+   
+})
+
+
+
+
+
+
+
+//添加
+  const active={
+    add:function(){
+      addIndex=layer.open({
+        title:"钢丝绳入库",
+        type:2,
+        content:'owner/addRope.html',
+        area:['100%','100%'],   //弹出框大小
+        success:function(layero,addIndex){
+          setTimeout(function(){
+            layer.tips('点击此处返回列表','.layui-layer-setwin .layui-layer-close',{
+              tips:3
+            });
+          },500);
+        }
+      });
+    }
+  };
+  $('.layui-btn-container .layui-btn').on('click',function(){
+    //获取数据类型
+    var type=$(this).data('type');
+    active[type]?active[type].call(this):'';
+  });
+
+
+
+
+
+
+
+
+
+//高级查询
+$('#btnSearch').click(function(){
+
+  
+  table.reload('testReload',{
+    url:address+"rope/selectAllByLike"
+    ,where:{
+      //设定异步数据接口的额外参数，任意设
+      batchNumber:$('#batchNumber').val(), 
+      shipType:$('#shipType').val(),
+      type:$('#type').val(), 
+      choose1:$('#choose1').val(),
+      choose2:$('#choose2').val(),
+      
+    }
+    ,page:{
+      curr:1 //重新从第一页开始
+    }
+  })
+})
+
+
+  
+  //监听行工具事件
+  table.on('tool(test)', function(obj){
+    var data = obj.data;
+    var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+  
+    if(obj.event === 'del'){
+      //确认框
+      layer.confirm('真的删除行么', function(index){
+        obj.del();
+        layer.close(index);
+        // 向服务端发送请求
+        $.ajax({
+          url: address+'rope/deleteById',
+          type: 'get',
+          data:{'id':data.id} ,//向服务端发送删除的id
+          
+          success: function (suc) {
+            if (suc == 200) {
+              layer.msg("删除失败", { icon: 5 });
+            }
+            else {
+             
+              obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+              layer.close(index);
+              console.log(index);
+              layer.msg("删除成功", { icon: 1 });
+            }
+          }
+        });
+       
+
+       
+        
+      });
+    } else if (obj.event === 'edit') {      //编辑
+      $.ajax({
+                url: address+'rope/updateRope',      //换成自己的url
+                type: 'post',
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                dataType: "json",
+                success: function (e) {
+                  layer.alert("编辑成功")
+                    
+                },
+                error: function (e) {
+                    layer.msg(e);
+                }
+            })
+
+
+    }else if(obj.event==='download'){
+      const certification1 = data.certification;
+      // const aUrl=document.getElementById("#download");
+      console.log(data.certification);
+      
+      $.ajax({
+        url: address
+        +'download',
+        type: 'GET',
+        data: { path:  certification1},
+        responseType:'blob',
+        success: function (data) {
+          let download;
+          download=address+"download?path="+certification1;
+          console.log(download);
+          // aUrl.href=download;
+          console.log(123456);
+          window.location.href=download;
+
+        }
+      })
+
+       
+
+    }else if(obj.event === 'inRecord'){
+      // console.log(obj.data);
+      // console.log(obj.value);
+      layer.open({
+        title:"入库检验记录",
+        type:2,
+        content:"owner/addWireropeRecord.html?id="+data.id,
+        area:["100%",'100%'],   //弹出框大小
+        success:function(layero,index){
+          
+          var body=layer.getChildFrame('body',index);
+          body.find("productId").val(tagid);
+          form.render();
+          
+          
+        }
+      });
+ 
+ 
+
+
+    }
+
+   
+  });
+
+});
+
+</script>
+
+</body>
+</html>

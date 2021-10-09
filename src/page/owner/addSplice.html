@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css"  media="all">
+    <script src="../../static/layui/layui.js" charset="utf-8"></script>
+    <script crossorigin="anonymous" src="../../static/jquery/jquery-3.3.1.min.js"></script>
+</head>
+<style>
+    .form{
+      width: 800px;
+      height: 500px;
+      margin: auto;
+    }
+    .layui-form{
+      margin-left: 100px;
+    }
+    .warning{
+      line-height: 38px;
+      display: inline;
+      margin-left: 20px;
+      color: #f73162;
+      /* display: none; */
+    }
+    .layui-inline{
+      margin-bottom: 15px;
+    }
+    .layui-input{
+      width: 190px;
+      margin-right: 5px;
+    }
+</style>
+<body>
+    <form class="layui-form" action="javascript:;" class="form">
+      <div class="layui-form-item">
+        <label class="layui-form-label">批次号</label>
+        <div class="layui-input-inline">
+          <input type="text" name="batchNumber" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+        </div>
+        <div class="warning" display="none">*</div>
+      </div>
+     
+      <div class="layui-form-item" style="float: left;">
+          <label class="layui-form-label">合格证</label>
+          <div class="layui-input-inline">
+            <button type="button" class="layui-btn" id="upload"><i class="layui-icon"></i>上传文件</button>
+            <!-- 隐藏的input,一个隐藏的input（用于保存文件url） -->
+            <input type="hidden" id="file_url" name="certification" value=""/> 
+          </div>
+          <div class="warning" >*</div>
+          <div class="hint" style="display: inline;color: rgba(119, 219, 79, 0.87);opacity: 0;" >上传文件成功</div>
+        </div>
+
+        <div class="layui-form-item">
+          <label class="layui-form-label">总数</label>
+          <div class="layui-input-inline">
+            <input type="text" name="count" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+          </div>
+          <div class="warning" >*</div>
+        </div>
+     
+      
+     
+        <div class="layui-form-item">
+          <label class="layui-form-label">进货日期</label>
+          <div class="layui-input-inline">
+            <input type="text" name="date" id="date" lay-verify="date" placeholder="yyyy-MM-dd" autocomplete="off" class="layui-input">
+          </div>
+          <div class="warning" >*</div>
+        </div>
+       
+
+        <div class="layui-form-item" style="float: left;">
+          <label class="layui-form-label">入库检验记录</label>
+          <div class="layui-input-inline">
+            <button class="layui-btn  "  value="' + d.id + '"lay-event="inRecord" id="inRecord">上传检验记录</button>
+          </div>
+          <div class="warning" >*</div>
+          <div class="hint" style="display: inline;color: rgba(119, 219, 79, 0.87);opacity: 0;" >上传检验记录成功</div>
+        </div>
+        
+
+        <div class="layui-form-item">
+          <label class="layui-form-label">制造商</label>
+          <div class="layui-input-inline">
+            <input type="text" name="manufacturer" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+          </div>
+          <div class="warning" >*</div>
+        </div>
+
+        
+
+        <!-- <div class="layui-form-item">
+          <label class="layui-form-label">原材料名称</label>
+          <div class="layui-input-inline">
+            <input type="text" name="rawName" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+          </div>
+          <div class="warning" >*</div>
+        </div> -->
+
+        <div class="layui-form-item">
+          <label class="layui-form-label">船型</label>
+          <div class="layui-input-inline">
+            <input type="text" name="shipType" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+          </div>
+          <div class="warning" >*</div>
+        </div>
+
+        <div class="layui-form-item">
+          <label class="layui-form-label">型号</label>
+          <div class="layui-input-inline">
+            <input type="text" name="type" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+          </div>
+          <div class="warning" >*</div>
+        </div>
+
+        <div class="layui-form-item ">
+          <label class="layui-form-label">仓库</label>
+          <div class="layui-input-inline" id="warehouse">
+            <select name="warehouseName" lay-verify="required" lay-search="" id="warehouseName" >
+              <option value="">直接选择或搜索选择</option>
+            </select>
+          </div>
+          <div class="warning" >*</div>
+        </div>
+
+          <div class="layui-form-item">
+            <div class="layui-input-inline" style="margin-left:125px;">
+              <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1"  >立即提交</button>
+              <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+          </div>
+      </form>
+</body>
+<script src="../../static/js/configure.js"></script>
+<script >
+    layui.use(['form','element','laydate','layedit','upload'],function(){
+        var form=layui.form,
+        layer=layui.layer,
+        layedit = layui.layedit,
+        laydate = layui.laydate,
+        element=layui.element,
+        upload=layui.upload;
+
+         //日期
+        laydate.render({
+            elem: '#date'
+        });
+
+        //自定义验证规则
+      form.verify({
+        title: function (value) {
+          if (value.length < 1) {
+            return '必填项不能为空';
+          }
+        }
+
+        , content: function (value) {
+          layedit.sync(editIndex);
+        }
+      });
+
+        //指定允许上传的文件类型
+        upload.render({
+          elem: '#upload'
+          , url: address+'upload' 
+          , accept: 'file' //普通文件
+          ,headers:{access_token: localStorage.access_token}
+          , done: function (res,index,upload) {
+            let url= document.getElementById("file_url");
+            url.value=res.message; 
+            let hintObj=document.querySelector('.hint');
+            hintObj.style.opacity=1;  
+          } 
+           //请求异常回调
+          , error: function (index,upload) {
+            alert("请求异常")
+            console.log("请求异常");
+          }
+          
+        });
+
+       
+
+     
+    //监听提交
+    form.on('submit(demo1)', function(data){
+       console.log(data);
+
+        $.ajax({
+            url:address+'joint/updateJoint',
+            type:'post',
+            contentType: "application/json",
+            data:JSON.stringify(data.field),
+            dataType:"json",
+            success:function(data){
+              console.log(data);
+                if(data.status>=200&&data.status<300){
+                    layer.alert("提交成功！")
+                }
+                else{
+                    layer.alert("提交失败！")
+                }
+            },
+            error:function(e){
+            layer.alert("提交失败11！")
+
+            },
+            
+        });
+        return false;
+    });
+
+//搜索仓库
+window.onload= function(){
+      $.ajax({
+        url:address+'warehouse/selectName',
+        type:'get',
+        success:function(data){
+          console.log(data+"123");
+
+          let str='<option value="">直接选择或搜索选择</option>';
+            for(let i=0;i<data.length;i++){
+            	//组装数据
+                str+=`<option value="${data[i]}">${data[i]}</option>`;
+            }
+            //jquery赋值方式
+            $("#warehouseName").html(str);
+            //重新渲染生效
+            form.render(); 
+          
+        },
+        error:function(e){
+          layer.alert("请求失败")
+        }
+      })
+    }
+
+
+    $("#inRecord").click(function(){
+      layer.open({
+        title:"入库检验记录",
+        type:2,
+        content:"recordPage/spliceRecord.html",
+        area:["90%",'90%'],   //弹出框大小
+        success:function(layero,index){
+          
+          // var body=layer.getChildFrame('body',index);
+          // body.find("productId").val(tagid);
+          // form.render();
+          
+          
+        }
+      })
+
+
+    })  
+
+  });
+</script>
+</html>

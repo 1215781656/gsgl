@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../static/layui/css/layui.css"  media="all">
+    <script src="../../static/layui/layui.js" charset="utf-8"></script>
+    <script crossorigin="anonymous" src="../../static/jquery/jquery-3.3.1.min.js"></script>
+</head>
+<style>
+    .form{
+      width: 800px;
+      height: 500px;
+      margin: auto;
+    }
+    .layui-form{
+      margin-left: 100px;
+    }
+    .warning{
+      line-height: 38px;
+      display: inline;
+      margin-left: 20px;
+      color: #f73162;
+      /* display: none; */
+    }
+    .layui-inline{
+      margin-bottom: 15px;
+    }
+    .layui-input{
+      width: 190px;
+      margin-right: 5px;
+    }
+</style>
+<body>
+    <form class="layui-form" action="" class="form">
+        
+          <div class="layui-form-item">
+            <label class="layui-form-label">位置</label>
+            <div class="layui-input-inline">
+              <input type="text" name="location" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+    
+          <div class="layui-form-item">
+            <label class="layui-form-label">仓库名</label>
+            <div class="layui-input-inline">
+              <input type="text" name="warehouseName" lay-verify="title" autocomplete="off" placeholder="请输入" class="layui-input">
+            </div>
+            <div class="warning" >*</div>
+          </div>
+
+          <div class="layui-form-item">
+            <div class="layui-input-inline" style="margin-left:125px;">
+              <button type="submit" class="layui-btn" lay-submit="" lay-filter="demo1"  >立即提交</button>
+              <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+          </div>
+      </form>
+</body>
+<script>
+    layui.use(['form','element','laydate','layedit','upload'],function(){
+        var form=layui.form;
+      
+
+       
+        //自定义验证规则
+      form.verify({
+        title: function (value) {
+          if (value.length < 1) {
+            return '必填项不能为空';
+          }
+        }
+
+        , content: function (value) {
+          layedit.sync(editIndex);
+        }
+      });
+
+      
+
+     
+
+     
+    //监听提交
+    form.on('submit(demo1)', function(data){
+        console.log(data.field);
+
+        $.ajax({
+            url:address+'warehouse/add',
+            type:'post',
+            contentType: "application/json",
+            data:JSON.stringify(data.field),
+            dataType:"json",
+            success:function(data){
+              console.log(data);
+                if(data.status>=200&&data.status<300){
+                    layer.alert("提交成功！")
+                }
+                else{
+                    layer.alert("提交失败！")
+                }
+            },
+            error:function(e){
+            layer.alert("提交失败11！")
+
+            },
+            
+        });
+        return false;
+    });
+
+    
+
+
+
+  });
+</script>
+</html>

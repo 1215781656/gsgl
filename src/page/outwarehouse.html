@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Layui</title>
+  <meta name="renderer" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link rel="stylesheet" href="../../src/static/layui/css/layui.css"  media="all">
+  <script crossorigin="anonymous" src="../static/jquery/jquery-3.3.1.min.js"></script>
+  <!-- 注意：如果你直接复制所有代码到本地，上述css路径需要改成你本地的 -->
+</head>
+<body>
+  <div class="demoTable">
+    <a >
+      产品名称
+      <div class="layui-inline">
+        <input class="layui-input" name="id" id="productName"  autocomplete="off">
+      </div>
+      <button class="layui-btn" data-type="reload" id="btnSearch" >出库信息查询</button>
+    </a>
+  </div>
+
+<table class="layui-hide" id="test" lay-filter="test"></table>
+ 
+<script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm layui-btn-normal" >出库信息查询表</button>
+  </div>
+</script>
+ 
+<script type="text/html" id="barDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+<script type="text/html" id="barDemoHe">
+  <input type="hidden" id="file_url" name="file" value="">
+</script>
+              
+          
+<script src="../../src/static/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 --> 
+ 
+<script src="../static/js/configure.js"></script>
+<script >
+layui.use(['table','upload'], function(){
+  var table = layui.table;
+  var upload=layui.upload;
+  
+  table.render({
+    elem: '#test'
+    ,url:address+'outwarehouse/selectAllByLike'
+    ,method:'get'
+    ,id:"testReload"
+    ,cellMinWidth: 80 //全局定义常规单元格的最小宽度，layui    
+    ,toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+    ,defaultToolbar: ['filter', 'exports', 'print', { //自定义头部工具栏右侧图标。如无需自定义，去除该参数即可
+      title: '提示'
+      ,layEvent: 'LAYTABLE_TIPS'
+      ,icon: 'layui-icon-tips'
+    }]
+    ,title: '出库表'
+    ,cols: [[
+      {type: 'checkbox', fixed: 'left'}
+      ,{field:'id', title:'id',hide:true,  fixed: 'left' }
+      ,{field:'productName', title:'产品名称',edit: 'text'}
+      ,{field:'outCount', title:'出库数量',  edit: 'text'}
+      ,{field:'date', title:'出库时间',  edit: 'text'}
+      ,{field:'outLocation', title:'出库去向',  edit: 'text', }
+      ,{field:'outRecord', title:'出库检验记录', hide:true}
+      ,{
+        type: 'upload', title: "出库检验记录表", width: 140,
+         templet: function (d) {//这里的参数d是templete的固定用法，可以取到该行的所有数据
+      
+          if (d.outRecord == ""||d.outRecord=="出库检验记录XXX") {//未上传
+            //class里的upload_btn是用来标志上传按钮的，没有定义实际的css样式
+            return '<button class="layui-btn layui-btn-xs upload_btn" value="' + d.id + '"><i class="layui-icon"></i>上传</button>';
+          } else { //已上传||被替换
+            return '<button class="layui-btn layui-btn-xs replace_btn" value="' + d.id + '"><i class="layui-icon"></i>替换</button>' +
+              '<button class="layui-btn  layui-btn-xs delete_btn" lay-event="download" value="' + d.id + '" style="margin-left:10px">下载</button>'; //删除按钮不需要渲染上传，只是一个动作按钮，可以通过lay-event进行行事件监听
+          }
+        }
+      }
+      ,{field:'status', title:'使用状态',edit: 'text'}
+      ,{field:'comment', title:'状态描述',  edit: 'text'}
+      ,{field:'userId', title:'用户ID',hide:true  }
+      ,{field:'caozuo', title:'操作', toolbar:"#barDemo"  }
+    ]]
+    , parseData: function (res) {
+      return {
+        "code": 0
+        , "msg": ""
+        , "count": res.total   //解析数据长度
+        , "data": res.list    //解析数据列表
+        ,"prev":res.prePage    //向前一页
+        ,"page":res.pageNum     //当前页数
+        ,"next":res.nextPage    //下一页
+        ,"limit":res.pageSize    //一页显示多少条
+
+      }
+    }
+    //分页
+    ,page: { //支持传入 laypage 组件的所有参数（某些参数除外，如：jump/elem） - 详见文档
+                layout: [ 'count', 'prev', 'page', 'next','limit', 'skip'] //自定义分页布局
+                ,curr:1        //设定初始在第 5 页
+                // ,currentPage: 2 
+                ,pageSize:4 //一页显示多少条
+                ,limits:[1,2,3,4,5,6,7,8,9,10]//每页条数的选择项
+                ,groups: 5 //只显示 2 个连续页码
+                ,first: "首页" //不显示首页
+                ,last: "尾页" //不显示尾页
+                
+    }
+    ,request: {
+    pageName: 'currentPage' //页码的参数名称，默认：page
+    ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+    ,statusName:'status'//数据状态的字段名称，默认：code
+    ,statusCode:200 //成功的状态码，默认：0
+  }
+  , done: function(res, curr, count){//表格加载完成后，对上传按钮进行渲染
+        var tableId = this.id;
+        var tableElem = this.elem;
+        //table render出来实际显示的table组件
+        var tableViewElem = tableElem.next();
+            
+        //渲染当前页面的所有upload组件
+      
+        uploadFn('.upload_btn',address+'outwarehouse/upload')
+        uploadFn('.replace_btn',address+'outwarehouse/updateFile')
+        //上传文件的封装函数
+        function uploadFn(obj, httpurl) {
+          upload.render({
+            elem: tableViewElem.find(obj)
+            , url: httpurl
+            , accept: 'file' //普通文件
+            , method: "POST"
+            // ,headers:{access_token: localStorage.access_token}
+            , before: function (obj) {
+              var tableElem = this.item;
+              uploadParem = tableElem.attr('value');
+
+              layer.load();    //上传loading
+
+            }
+            , data: {
+              id: function () {
+                console.log(uploadParem);
+                return uploadParem;
+              }
+            }
+            , done: function (res, index, upload) {
+              layer.closeAll('loading'); //关闭loading
+              // window.parent.location.reload();
+              // let url= document.getElementById("file_url");
+              // url.value=res.message; 
+
+              console.log("上传成功");
+              console.log(res);
+
+
+            }
+
+            //请求异常回调
+            , error: function (index, upload) {
+              layer.closeAll('loading'); //关闭loading
+              alert("请求异常")
+              console.log("请求异常");
+            }
+
+          });
+        }
+       
+    }
+
+
+  });
+  
+  //头工具栏事件
+  table.on('toolbar(test)', function(obj){
+    var checkStatus = table.checkStatus(obj.config.id);
+    switch(obj.event){
+      case 'getCheckData':
+        var data = checkStatus.data;
+        layer.alert(JSON.stringify(data));
+      break;
+      case 'getCheckLength':
+        var data = checkStatus.data;
+        layer.msg('选中了：'+ data.length + ' 个');
+      break;
+      case 'isAll':
+        layer.msg(checkStatus.isAll ? '全选': '未全选');
+      break;
+      
+      //自定义头工具栏右侧图标 - 提示
+      case 'LAYTABLE_TIPS':
+        layer.alert('这是工具栏右侧自定义的一个图标按钮');
+      break;
+    };
+  });
+  
+  //监听行工具事件
+  table.on('tool(test)', function(obj){
+    var data = obj.data;
+    //console.log(obj)
+    if(obj.event === 'del'){
+      layer.confirm('真的删除行么', function(index){
+        obj.del();
+        layer.close(index);
+        //向服务端发送请求
+        $.ajax({
+          url: address+'outwarehouse/deleteById',
+          type: 'get',
+          data:{'id':data.id} ,//向服务端发送删除的id
+          
+          success: function (suc) {
+            if (suc == 200) {
+              layer.msg("删除失败", { icon: 5 });
+            }
+            else {
+              obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+              layer.close(index);
+              console.log(index);
+              layer.msg("删除成功", { icon: 1 });
+            }
+          }
+        });
+
+
+
+
+      });
+    } else if(obj.event === 'edit'){
+      $.ajax({
+                url: address+'outwarehouse/updateOutwarehouse',      //换成自己的url
+                type: 'post',
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                dataType: "json",
+                success: function (e) {
+                  layer.alert("编辑成功")
+                    
+                },
+                error: function (e) {
+                    layer.msg(e);
+                }
+            })
+    }else if(obj.event==='download'){
+      const outRecord1 = data.outRecord;
+      console.log(data.inRecord);
+      
+      $.ajax({
+        url: address+'download',
+        type: 'GET',
+        data: { path:  outRecord1},
+        responseType:'blob',
+        success: function (data) {
+          let download;
+          download=address+"download?path="+outRecord1;
+          console.log(download);
+          window.location.href=download;
+
+        }
+      })
+
+
+    }
+
+
+  });
+
+
+//查询
+$('#btnSearch').click(function () {
+    table.reload('testReload',{
+    url:address+"outwarehouse/selectAllByLike"
+    ,methods:"get"
+    ,where:{
+      //设定异步数据接口的额外参数，任意设
+      productName:$('#productName').val(), 
+     
+    }
+    ,page:{
+      curr:1 //重新从第一页开始
+    }
+  })
+
+  });
+
+
+
+
+
+
+
+});
+</script>
+
+</body>
+</html>
